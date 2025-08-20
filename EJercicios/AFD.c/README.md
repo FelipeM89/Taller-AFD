@@ -7,7 +7,7 @@ De esta forma, el código es **flexible** y no está “quemado” en el `.c`.
 ---
 
 
-##  Estructura de `afd.txt`
+##  Estructura de `Conf.txt`
 
 Ejemplo de definición de un AFD:
 

@@ -36,7 +36,7 @@ El alfabeto es binario (`0` y `1`).
 
 ---
 
-## 📂 Estructura de `Cadenas.txt`
+## Estructura de `Cadenas.txt`
 
 Ejemplo de archivo con cadenas de entrada:
 

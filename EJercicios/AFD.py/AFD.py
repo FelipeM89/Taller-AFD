@@ -1,149 +1,149 @@
 import sys
 
-MAX_STATES = 64
-MAX_NAME   = 32
-MAX_LINE   = 256
+MAX_ESTADOS = 64
+MAX_NOMBRE  = 32
+MAX_LINEA   = 256
 
 # --- Almacenamiento del AFD ---
-state_names = []
-num_states = 0
-initial = -1
-is_final = []
-delta = []
+nombres_estados = []
+num_estados = 0
+inicial = -1
+es_final = []
+transicion = []
 
 # ---------- Utilidades ----------
-def rtrim(s: str) -> str:
+def recortar_derecha(s: str) -> str:
     return s.rstrip("\n\r ").rstrip()
 
-def ltrim(s: str) -> str:
+def recortar_izquierda(s: str) -> str:
     return s.lstrip()
 
-def trim(s: str) -> str:
-    return ltrim(rtrim(s))
+def recortar(s: str) -> str:
+    return recortar_izquierda(recortar_derecha(s))
 
-def index_of_state(name: str) -> int:
+def indice_estado(nombre: str) -> int:
     try:
-        return state_names.index(name)
+        return nombres_estados.index(nombre)
     except ValueError:
         return -1
 
-def add_state(name: str):
-    global num_states
-    if index_of_state(name) != -1:
+def agregar_estado(nombre: str):
+    global num_estados
+    if indice_estado(nombre) != -1:
         return
-    if num_states >= MAX_STATES:
-        sys.stderr.write(f"Demasiados estados (>{MAX_STATES})\n")
+    if num_estados >= MAX_ESTADOS:
+        sys.stderr.write(f"Demasiados estados (>{MAX_ESTADOS})\n")
         sys.exit(1)
-    state_names.append(name)
-    is_final.append(0)
-    delta.append([-1, -1])
-    num_states += 1
+    nombres_estados.append(nombre)
+    es_final.append(0)
+    transicion.append([-1, -1])
+    num_estados += 1
 
-def expect(cond: bool, msg: str):
+def esperar(cond: bool, mensaje: str):
     if not cond:
-        sys.stderr.write(f"Error de configuración: {msg}\n")
+        sys.stderr.write(f"Error de configuración: {mensaje}\n")
         sys.exit(1)
 
 # ---------- Parseo de Conf.txt ----------
-def load_config(path: str):
-    global num_states, initial, is_final, delta
-    with open(path, "r") as f:
-        lines = f.readlines()
+def cargar_config(ruta: str):
+    global num_estados, inicial, es_final, transicion
+    with open(ruta, "r") as f:
+        lineas = f.readlines()
 
     # inicializar
-    num_states = 0
-    initial = -1
-    state_names.clear()
-    is_final.clear()
-    delta.clear()
+    num_estados = 0
+    inicial = -1
+    nombres_estados.clear()
+    es_final.clear()
+    transicion.clear()
 
-    section = None
-    for line in lines:
-        line = trim(line)
-        if not line:
+    seccion = None
+    for linea in lineas:
+        linea = recortar(linea)
+        if not linea:
             continue
-        if line.startswith("#"):
-            if "Estados de aceptación" in line:
-                section = "FINALS"
-            elif "Estado inicial" in line:
-                section = "INITIAL"
-            elif "Transiciones" in line:
-                section = "TRANSITIONS"
-            elif "Estados" in line:
-                section = "STATES"
+        if linea.startswith("#"):
+            if "Estados de aceptación" in linea:
+                seccion = "FINALES"
+            elif "Estado inicial" in linea:
+                seccion = "INICIAL"
+            elif "Transiciones" in linea:
+                seccion = "TRANSICIONES"
+            elif "Estados" in linea:
+                seccion = "ESTADOS"
             else:
-                section = None
+                seccion = None
             continue
 
-        if section == "STATES":
-            for tok in line.split():
-                add_state(tok)
-        elif section == "INITIAL":
-            name = line.split()[0]
-            add_state(name)
-            initial = index_of_state(name)
-        elif section == "FINALS":
-            for tok in line.split():
-                add_state(tok)
-                idx = index_of_state(tok)
-                expect(idx != -1, "estado final no declarado")
-                is_final[idx] = 1
-        elif section == "TRANSITIONS":
-            parts = line.split()
-            if len(parts) == 3:
-                a, c, b = parts
-                expect(c in ['0', '1'], "símbolo distinto de 0/1")
-                add_state(a)
-                add_state(b)
-                i = index_of_state(a)
-                j = index_of_state(b)
-                expect(i != -1 and j != -1, "estado en transición no declarado")
-                delta[i][int(c)] = j
+        if seccion == "ESTADOS":
+            for tok in linea.split():
+                agregar_estado(tok)
+        elif seccion == "INICIAL":
+            nombre = linea.split()[0]
+            agregar_estado(nombre)
+            inicial = indice_estado(nombre)
+        elif seccion == "FINALES":
+            for tok in linea.split():
+                agregar_estado(tok)
+                idx = indice_estado(tok)
+                esperar(idx != -1, "estado final no declarado")
+                es_final[idx] = 1
+        elif seccion == "TRANSICIONES":
+            partes = linea.split()
+            if len(partes) == 3:
+                a, c, b = partes
+                esperar(c in ['0', '1'], "símbolo distinto de 0/1")
+                agregar_estado(a)
+                agregar_estado(b)
+                i = indice_estado(a)
+                j = indice_estado(b)
+                esperar(i != -1 and j != -1, "estado en transición no declarado")
+                transicion[i][int(c)] = j
 
-    expect(num_states > 0, "no se definieron estados")
-    expect(initial != -1, "no se definió estado inicial")
+    esperar(num_estados > 0, "no se definieron estados")
+    esperar(inicial != -1, "no se definió estado inicial")
 
-    for i in range(num_states):
-        expect(delta[i][0] != -1, "falta transición con 0")
-        expect(delta[i][1] != -1, "falta transición con 1")
+    for i in range(num_estados):
+        esperar(transicion[i][0] != -1, "falta transición con 0")
+        esperar(transicion[i][1] != -1, "falta transición con 1")
 
 # ---------- Simulación ----------
-def run(w: str) -> bool:
-    q = initial
-    for ch in w:
+def ejecutar(cadena: str) -> bool:
+    q = inicial
+    for ch in cadena:
         if ch in ['0', '1']:
-            q = delta[q][int(ch)]
+            q = transicion[q][int(ch)]
         else:
             return False
-    return bool(is_final[q])
+    return bool(es_final[q])
 
-def dump_table():
+def mostrar_tabla():
     print("\n== AFD cargado ==")
     print("Estados: ", end="")
-    for i in range(num_states):
-        ini = "[" if i == initial else ""
-        fin = "+" if is_final[i] else "]" if i == initial else ""
-        print(f"{ini}{state_names[i]}{fin} ", end="")
+    for i in range(num_estados):
+        ini = "[" if i == inicial else ""
+        fin = "+" if es_final[i] else "]" if i == inicial else ""
+        print(f"{ini}{nombres_estados[i]}{fin} ", end="")
     print("\nTransiciones (q,0)-> | (q,1)->")
-    for i in range(num_states):
-        print(f"{state_names[i]:8}  {state_names[delta[i][0]]:8} | {state_names[delta[i][1]]:8}")
+    for i in range(num_estados):
+        print(f"{nombres_estados[i]:8}  {nombres_estados[transicion[i][0]]:8} | {nombres_estados[transicion[i][1]]:8}")
     print()
 
 # ---------- Main ----------
 def main():
-    load_config("Conf.txt")
-    dump_table()  # comenta esta línea si no quieres imprimir la tabla
+    cargar_config("Conf.txt")
+    mostrar_tabla()  # comenta esta línea si no quieres imprimir la tabla
 
     try:
         with open("Cadenas.txt", "r") as g:
-            for line in g:
-                line = trim(line)
-                if not line:
+            for linea in g:
+                linea = recortar(linea)
+                if not linea:
                     continue
-                if line == "E":
-                    line = ""
-                resultado = "Acepta" if run(line) else "NO acepta"
-                print(f"{line if line else 'ε'} -> {resultado}")
+                if linea == "E":
+                    linea = ""
+                resultado = "Acepta" if ejecutar(linea) else "NO acepta"
+                print(f"{linea if linea else 'ε'} -> {resultado}")
     except FileNotFoundError:
         sys.stderr.write("No se encontró Cadenas.txt\n")
         sys.exit(1)

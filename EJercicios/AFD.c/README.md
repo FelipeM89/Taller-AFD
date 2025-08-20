@@ -1,4 +1,4 @@
-# 📝 Simulador de AFD en C
+# Simulador de AFD en C
 
 Este proyecto implementa un **simulador de Autómatas Finitos Deterministas (AFD)** en lenguaje **C**.  
 La configuración del autómata (estados, transiciones, inicial y finales) se lee desde un archivo de texto (`afd.txt`) y las cadenas a evaluar desde otro (`cadenas.txt`).  
@@ -7,7 +7,7 @@ De esta forma, el código es **flexible** y no está “quemado” en el `.c`.
 ---
 
 
-## 📖 Estructura de `afd.txt`
+##  Estructura de `afd.txt`
 
 Ejemplo de definición de un AFD:
 
@@ -23,7 +23,7 @@ Ejemplo de definición de un AFD:
 
 ---
 
-## 📖 Estructura de `cadenas.txt`
+##  Estructura de `cadenas.txt`
 
 Contiene las cadenas a evaluar:
 

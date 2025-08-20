@@ -62,7 +62,7 @@ El programa guarda la configuración del AFD en arreglos globales:
   transiciones[i][1] = símbolo,
   transiciones[i][2] = estado destino.
   
-## **3.Función cargarAFD(FILE *f)**
+## 3.Función cargarAFD(FILE *f)
     ```c
     void cargarAFD(FILE *f) {
        char linea[100];
@@ -79,7 +79,7 @@ El programa guarda la configuración del AFD en arreglos globales:
 - Usa strtok para dividir las palabras separadas por espacio.
 - Cada token se guarda en los arreglos globales.
 
-## **4.Función esAceptado(char *cadena)**
+## 4.Función esAceptado(char *cadena)
     int esAceptado(char *cadena) {
       char estadoActual[10];
       strcpy(estadoActual, inicial); // comenzar en el inicial
